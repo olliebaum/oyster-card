@@ -16,4 +16,12 @@ describe Oystercard do
           "Top-up can't exceed card limit of £#{Oystercard::BALANCE_CAP}")
       end
     end
+
+    context '#deduct' do
+      it 'decreases the balance by given amount' do
+        subject.top_up(20)
+        subject.deduct(5)
+        expect(subject.balance).to eq 15
+      end
+    end
 end
