@@ -1,10 +1,11 @@
 require 'oystercard'
 describe Oystercard do
+  let(:station) { double :station }
     it 'has balance of 0 when initialised' do
       expect(subject::balance).to eq 0
     end
 
-    context '#top_up' do
+    describe '#top_up' do
 
       it 'increases the balance by top up amount' do
         subject.top_up(5)
@@ -17,29 +18,48 @@ describe Oystercard do
       end
     end
 
-    context '#touch_in' do
-      it 'starts a journey' do
-        subject.top_up(Oystercard::MINIMUM_FARE)
-        subject.touch_in
-        expect(subject).to be_in_journey
+    describe '#touch_in' do
+      context 'has enough funds for minimum fare' do
+        before(:each) do
+          subject.top_up(Oystercard::MINIMUM_FARE)
+          subject.touch_in(station)
+        end
+        it 'starts a journey' do
+          expect(subject).to be_in_journey
+        end
+
+        it 'remembers the entry station' do
+          station_name = "Aldgate East"
+          allow(station).to receive(:name) {station_name}
+          expect(subject.entry_station.name).to eq station_name
+        end
       end
-      it 'raises error if balance below minimum fare' do
-        expect{subject.touch_in}.to raise_error("Insufficient funds!")
+
+      context 'has no funds' do
+        it 'raises error if balance below minimum fare' do
+          expect{subject.touch_in(station)}.to raise_error("Insufficient funds!")
+        end
       end
+
     end
 
-    context '#touch_out' do
+    describe '#touch_out' do
+      before(:each) do
+        @fare = Oystercard::MINIMUM_FARE
+        subject.top_up(@fare)
+        subject.touch_in(station)
+      end
+
       it 'ends a journey' do
-        subject.top_up(Oystercard::MINIMUM_FARE)
-        subject.touch_in
         subject.touch_out
         expect(subject).not_to be_in_journey
       end
       it 'charges minimum fare' do
-        fare = Oystercard::MINIMUM_FARE
-        subject.top_up(fare)
-        subject.touch_in
-        expect{ subject.touch_out }.to change{ subject.balance }.by(-fare)
+        expect{ subject.touch_out }.to change{ subject.balance }.by(-@fare)
+      end
+
+      it 'forgets the entry station' do
+        expect{ subject.touch_out }.to change{ subject.entry_station }.to be_nil
       end
     end
 end
