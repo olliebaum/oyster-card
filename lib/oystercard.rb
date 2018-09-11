@@ -14,16 +14,13 @@ class Oystercard
     @balance += amount
   end
 
-  def deduct(amount)
-    @balance -= amount
-  end
-
   def touch_in
     raise "Insufficient funds!" if insufficient_funds?
     @in_use = true
   end
 
   def touch_out
+    deduct(MINIMUM_FARE)
     @in_use = false
   end
 
@@ -33,12 +30,16 @@ class Oystercard
 
   private
 
-  def insufficient_funds?
-    @balance < MINIMUM_FARE
+  def deduct(amount)
+    @balance -= amount
   end
 
   def exceed_balance_cap?(amount)
     @balance + amount > BALANCE_CAP
+  end
+
+  def insufficient_funds?
+    @balance < MINIMUM_FARE
   end
 
 end

@@ -17,14 +17,6 @@ describe Oystercard do
       end
     end
 
-    context '#deduct' do
-      it 'decreases the balance by given amount' do
-        subject.top_up(20)
-        subject.deduct(5)
-        expect(subject.balance).to eq 15
-      end
-    end
-
     context '#touch_in' do
       it 'starts a journey' do
         subject.top_up(Oystercard::MINIMUM_FARE)
@@ -42,6 +34,12 @@ describe Oystercard do
         subject.touch_in
         subject.touch_out
         expect(subject).not_to be_in_journey
+      end
+      it 'charges minimum fare' do
+        fare = Oystercard::MINIMUM_FARE
+        subject.top_up(fare)
+        subject.touch_in
+        expect{ subject.touch_out }.to change{ subject.balance }.by(-fare)
       end
     end
 end
