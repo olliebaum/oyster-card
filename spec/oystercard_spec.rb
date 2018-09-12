@@ -38,7 +38,7 @@ describe Oystercard do
       it 'remembers the entry station' do
         station_name = "Aldgate East"
         allow(station).to receive(:name) {station_name}
-        expect(subject.entry_station.name).to eq station_name
+        expect(subject.journey.entry_station.name).to eq station_name
       end
     end
 
@@ -66,12 +66,12 @@ describe Oystercard do
     end
 
     it 'forgets the entry station' do
-      expect{ subject.touch_out(station2) }.to change{ subject.entry_station }.to be_nil
+      expect{ subject.touch_out(station2) }.to change{ subject.journey }.to be_nil
     end
 
     it 'creates a journey' do
       subject.touch_out(station2)
-      expect(subject.journeys).to eq [{ entry: station, exit: station2 }]
+      expect(subject.journeys).to include{subject.journey}
     end
   end
 end
