@@ -9,7 +9,7 @@ describe Oystercard do
     end
 
     it 'has no journeys recorded when initialised' do
-      expect(subject.journeys).to be_empty
+      expect(subject.journey_history).to be_empty
     end
   end
 
@@ -38,7 +38,7 @@ describe Oystercard do
       it 'remembers the entry station' do
         station_name = "Aldgate East"
         allow(station).to receive(:name) {station_name}
-        expect(subject.journey.entry_station.name).to eq station_name
+        expect(subject.current_journey.entry_station.name).to eq station_name
       end
     end
 
@@ -65,13 +65,13 @@ describe Oystercard do
       expect{ subject.touch_out(station2) }.to change{ subject.balance }.by(-@fare)
     end
 
-    it 'forgets the entry station' do
-      expect{ subject.touch_out(station2) }.to change{ subject.journey }.to be_nil
+    it 'forgets the current journey' do
+      expect{ subject.touch_out(station2) }.to change{ subject.current_journey }.to be_nil
     end
 
-    it 'creates a journey' do
+    it 'adds completed journey to journey history' do
       subject.touch_out(station2)
-      expect(subject.journeys).to include{subject.journey}
+      expect(subject.journey_history).to include{subject.current_journey}
     end
   end
 end
