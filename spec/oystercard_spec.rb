@@ -2,6 +2,7 @@ require 'oystercard'
 describe Oystercard do
   let(:station) { double :station }
   let(:station2) { double :station2 }
+  let(:journeymock) {double :soaisdjf }
 
   describe 'Initialise' do
     it 'has balance of 0 when initialised' do
@@ -37,7 +38,7 @@ describe Oystercard do
 
       it 'remembers the entry station' do
         station_name = "Aldgate East"
-        allow(station).to receive(:name) {station_name}
+        allow(station).to receive(:name).and_return(station_name)
         expect(subject.current_journey.entry_station.name).to eq station_name
       end
     end
@@ -51,22 +52,34 @@ describe Oystercard do
   end
 
   describe '#touch_out' do
-    before(:each) do
-      @fare = Oystercard::MINIMUM_FARE
-      subject.top_up(@fare)
-      subject.touch_in(station)
+    # before(:each) do
+    #   @fare = Oystercard::MINIMUM_FARE
+    #   subject.top_up(@fare)
+    #   subject.touch_in(station)
+    # end
+
+    before do
+      allow(journeymock).to receive(:fare) {3}
+      allow(journeymock).to receive(:in_journey?) {false}
+      allow(journeymock).to receive(:start)
+      allow(journeymock).to receive(:end)
     end
 
-    it 'ends a journey' do
+    it 'resets the current_journey to a new journey class' do
       subject.touch_out(station2)
-      expect(subject).not_to be_in_journey
-    end
-    it 'charges minimum fare' do
-      expect{ subject.touch_out(station2) }.to change{ subject.balance }.by(-@fare)
+      expect(subject.current_journey).to be_an_instance_of(Journey)
     end
 
-    it 'forgets the current journey' do
-      expect{ subject.touch_out(station2) }.to change{ subject.current_journey }.to be_nil
+    subject(:hello) {described_class.new(journeymock)}
+    it 'charges minimum fare' do
+      # binding.pry
+      hello.top_up(50)
+      hello.touch_in(station)
+      expect{ hello.touch_out(station2) }.to change{ hello.balance }.by(-3)
+    end
+
+    it 'checks current journey object responds to end method' do
+      expect(subject.current_journey).to respond_to(:end)
     end
 
     it 'adds completed journey to journey history' do
